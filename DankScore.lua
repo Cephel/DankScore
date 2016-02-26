@@ -1,7 +1,7 @@
 function GearScore_GetScore(Name, Target)
 	if ( UnitIsPlayer(Target) ) then
 	    local PlayerClass, PlayerEnglishClass = UnitClass(Target);
-		local GearScore = 0; local PVPScore = 0; local ItemCount = 0; local TitanGrip = 0.5; local LevelTotal = 0; local TempEquip = {}; local TempPVPScore = 0
+		local GearScore = 0; local PVPScore = 0; local ItemCount = 0; local LevelTotal = 0; local TempEquip = {}; local TempPVPScore = 0
 
 	
 		
@@ -11,27 +11,17 @@ function GearScore_GetScore(Name, Target)
 --	      if ( ItemEquipLoc == "INVTYPE_2HWEAPON" ) then TitanGrip = 0.5; end
 --	end
 
-		if ( GetInventoryItemLink(Target, 17) ) then
-			local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(GetInventoryItemLink(Target, 17))
-	--		if ( ItemEquipLoc == "INVTYPE_2HWEAPON" ) then TitanGrip = 0.5; end
-			TempScore, ItemLevel = GearScore_GetItemScore(GetInventoryItemLink(Target, 17));
-			if ( PlayerEnglishClass == "HUNTER" ) then TempScore = TempScore * 0.3164; end
-			GearScore = GearScore + TempScore * TitanGrip;	ItemCount = ItemCount + 1; LevelTotal = LevelTotal + ItemLevel
-            TempEquip[17] = GearScore_GetItemCode(ItemLink)
-		else
-      		TempEquip[17] = "0:0"
-		end
+
 		
 		for i = 1, 18 do
 
-			if ( i ~= 4 ) and ( i ~= 17 ) then
+			if ( i ~= 4 ) then
         		ItemLink = GetInventoryItemLink(Target, i)
 				if ( ItemLink ) then
         			local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(ItemLink)
      				TempScore, ItemLevel, a, b, c, d, TempPVPScore = GearScore_GetItemScore(ItemLink);
-					if ( i == 16 ) and ( PlayerEnglishClass == "HUNTER" ) then TempScore = TempScore * 0.3164; end
+					if ( i == 16 || i==17 ) and ( PlayerEnglishClass == "HUNTER" ) then TempScore = TempScore * 0.3164; end
 					if ( i == 18 ) and ( PlayerEnglishClass == "HUNTER" ) then TempScore = TempScore * 5.3224; end
-					if ( i == 16 ) then TempScore = TempScore * TitanGrip; end
 					GearScore = GearScore + TempScore;	ItemCount = ItemCount + 1; LevelTotal = LevelTotal + ItemLevel
 					--PVPScore = PVPScore + TempPVPScore
      				TempEquip[i] = GearScore_GetItemCode(ItemLink)
