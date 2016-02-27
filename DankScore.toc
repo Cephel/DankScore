@@ -1,5 +1,6 @@
 ## Title: DankScore
 ## Notes: Fill out later
 ## Interface: 11200
+## Dependencies: BonusScanner
 
 DankScore.lua
