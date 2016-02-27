@@ -1,52 +1,64 @@
-function GearScore_GetScore(Name, Target)
-	if ( UnitIsPlayer(Target) ) then
-	    local PlayerClass, PlayerEnglishClass = UnitClass(Target);
-		local GearScore = 0; local PVPScore = 0; local ItemCount = 0; local LevelTotal = 0; local TempEquip = {}; local TempPVPScore = 0
-
-	
-		
---	if ( GetInventoryItemLink(Target, 16) ) and ( GetInventoryItemLink(Target, 17) ) then
---	      local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(GetInventoryItemLink(Target, 16))
---	      local TitanGripGuess = 0
---	      if ( ItemEquipLoc == "INVTYPE_2HWEAPON" ) then TitanGrip = 0.5; end
---	end
-
-
-		
-		for i = 1, 18 do
-
-			if ( i ~= 4 ) then
-        		ItemLink = GetInventoryItemLink(Target, i)
-				if ( ItemLink ) then
-        			local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(ItemLink)
-     				TempScore, ItemLevel, a, b, c, d, TempPVPScore = GearScore_GetItemScore(ItemLink);
-					if ( i == 16 or i==17 ) and ( PlayerEnglishClass == "HUNTER" ) then TempScore = TempScore * 0.3164; end
-					if ( i == 18 ) and ( PlayerEnglishClass == "HUNTER" ) then TempScore = TempScore * 5.3224; end
-					GearScore = GearScore + TempScore;	ItemCount = ItemCount + 1; LevelTotal = LevelTotal + ItemLevel
-					--PVPScore = PVPScore + TempPVPScore
-     				TempEquip[i] = GearScore_GetItemCode(ItemLink)
-				else
-				    TempEquip[i] = "0:0"
-				end
-			end;
-		end
-		if ( GearScore <= 0 ) and ( Name ~= UnitName("player") ) then
-			GearScore = 0; return;
-		elseif ( Name == UnitName("player") ) and ( GearScore <= 0 ) then
-		    GearScore = 0; end
-		
-		--if ( GearScore < 0 ) and ( PVPScore < 0 ) then return 0, 0; end
-		--if ( PVPScore < 0 ) then PVPScore = 0; end
-        --print(GearScore, PVPScore)
---		local __, RaceEnglish = UnitRace(Target);
---		local __, ClassEnglish = UnitClass(Target);
---    local currentzone = GetZoneText()
---    if not ( GS_Zones[currentzone] ) then 
---      print("Alert! You have found a zone unknown to GearScore. Please report the zone '"..GetZoneText().." at gearscore.blogspot.com Thanks!"); 
---	  	currentzone = "Unknown Location"
---		end
---        local GuildName = GetGuildInfo(Target); if not ( GuildName ) then GuildName = "*"; else GuildName = GuildName; end
--- 	  	  GS_Data[GetRealmName()].Players[Name] = { ["Name"] = Name, ["GearScore"] = floor(GearScore), ["PVP"] = 1, ["Level"] = UnitLevel(Target), ["Faction"] = GS_Factions[UnitFactionGroup(Target)], ["Sex"] = UnitSex(Target), ["Guild"] = GuildName,
---        ["Race"] = GS_Races[RaceEnglish], ["Class"] =  GS_Classes[ClassEnglish], ["Spec"] = 1, ["Location"] = GS_Zones[currentzone], ["Scanned"] = UnitName("player"), ["Date"] = GearScore_GetTimeStamp(), ["Average"] = floor((LevelTotal / ItemCount)+0.5), ["Equip"] = TempEquip}
+-- output handler
+local function printLine(message)
+	if message then
+		DEFAULT_CHAT_FRAME:AddMessage("|cffff8000DankScore:|r " .. message);
 	end
 end
+
+
+-- bullshit compatability function because GetItemInfo doesn't work with links in 1.12
+local function getItemIdFromLink(link)
+	local cutFront = string.sub(link, 18);
+	local last = string.find(cutFront, ":");
+	local finalString = string.sub(cutFront, 0, last-1);
+	return finalString;
+end
+
+
+-- compute gearscore
+local function getGearScore(player, target)
+	local name, gearscore, success = "", 0, false;
+
+	-- Sort out targets
+	if UnitExists(target) then
+		if UnitName(player) == UnitName(target) then
+			name = "yourself";
+			target = player;
+		else
+			name = UnitName(target);
+		end
+	else
+		name = "yourself";
+		target = player;
+	end
+
+	-- Check if target is a player
+	if UnitIsPlayer(target) then
+		success = true;
+	end
+
+	-- Iterate through all equipped items and assign a gearscore
+	for i=1, 18 do
+		local itemLink = GetInventoryItemLink(target, i);
+		if not (itemLink == nil) then
+			local itemId = getItemIdFromLink(itemLink);
+			local _, _, _, itemLevel = GetItemInfo(itemId);
+			gearscore = gearscore + itemLevel;
+		end
+	end
+
+	return name, gearscore, success;
+end
+
+
+-- slash command handler
+SLASH_DANKSCORE1 = "/dankscore";
+local function slashCommand(msg, editbox)
+	local name, gearscore, success = getGearScore("player", "target");
+	if success then
+		printLine("The DankScore for " .. name .. " is '" .. gearscore .. "'");
+	else
+		printLine(name .. " is not a player.");
+	end
+end
+SlashCmdList["DANKSCORE"] = slashCommand;

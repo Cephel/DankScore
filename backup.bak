@@ -1,0 +1,54 @@
+
+
+function GearScore_GetScore(Name, Target)
+	if ( UnitIsPlayer(Target) ) then
+	    local PlayerClass, PlayerEnglishClass = UnitClass(Target);
+		local GearScore = 0; local PVPScore = 0; local ItemCount = 0; local LevelTotal = 0; local TempEquip = {}; local TempPVPScore = 0
+
+
+
+--	if ( GetInventoryItemLink(Target, 16) ) and ( GetInventoryItemLink(Target, 17) ) then
+--	      local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(GetInventoryItemLink(Target, 16))
+--	      local TitanGripGuess = 0
+--	      if ( ItemEquipLoc == "INVTYPE_2HWEAPON" ) then TitanGrip = 0.5; end
+--	end
+
+
+
+		for i = 1, 18 do
+
+			if ( i ~= 4 ) then
+        		ItemLink = GetInventoryItemLink(Target, i)
+				if ( ItemLink ) then
+        			local ItemName, ItemLink, ItemRarity, ItemLevel, ItemMinLevel, ItemType, ItemSubType, ItemStackCount, ItemEquipLoc, ItemTexture = GetItemInfo(ItemLink)
+     				TempScore, ItemLevel, a, b, c, d, TempPVPScore = GearScore_GetItemScore(ItemLink);
+					if ( i == 16 or i==17 ) and ( PlayerEnglishClass == "HUNTER" ) then TempScore = TempScore * 0.3164; end
+					if ( i == 18 ) and ( PlayerEnglishClass == "HUNTER" ) then TempScore = TempScore * 5.3224; end
+					GearScore = GearScore + TempScore;	ItemCount = ItemCount + 1; LevelTotal = LevelTotal + ItemLevel
+					--PVPScore = PVPScore + TempPVPScore
+     				TempEquip[i] = GearScore_GetItemCode(ItemLink)
+				else
+				    TempEquip[i] = "0:0"
+				end
+			end;
+		end
+		if ( GearScore <= 0 ) and ( Name ~= UnitName("player") ) then
+			GearScore = 0; return;
+		elseif ( Name == UnitName("player") ) and ( GearScore <= 0 ) then
+		    GearScore = 0; end
+
+		--if ( GearScore < 0 ) and ( PVPScore < 0 ) then return 0, 0; end
+		--if ( PVPScore < 0 ) then PVPScore = 0; end
+        --print(GearScore, PVPScore)
+--		local __, RaceEnglish = UnitRace(Target);
+--		local __, ClassEnglish = UnitClass(Target);
+--    local currentzone = GetZoneText()
+--    if not ( GS_Zones[currentzone] ) then
+--      print("Alert! You have found a zone unknown to GearScore. Please report the zone '"..GetZoneText().." at gearscore.blogspot.com Thanks!");
+--	  	currentzone = "Unknown Location"
+--		end
+--        local GuildName = GetGuildInfo(Target); if not ( GuildName ) then GuildName = "*"; else GuildName = GuildName; end
+-- 	  	  GS_Data[GetRealmName()].Players[Name] = { ["Name"] = Name, ["GearScore"] = floor(GearScore), ["PVP"] = 1, ["Level"] = UnitLevel(Target), ["Faction"] = GS_Factions[UnitFactionGroup(Target)], ["Sex"] = UnitSex(Target), ["Guild"] = GuildName,
+--        ["Race"] = GS_Races[RaceEnglish], ["Class"] =  GS_Classes[ClassEnglish], ["Spec"] = 1, ["Location"] = GS_Zones[currentzone], ["Scanned"] = UnitName("player"), ["Date"] = GearScore_GetTimeStamp(), ["Average"] = floor((LevelTotal / ItemCount)+0.5), ["Equip"] = TempEquip}
+	end
+end
